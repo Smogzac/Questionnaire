@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gesture Interface Survey</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <style>
+        .radio-toolbar input[type="radio"] {
+            opacity: 1;
+            position: relative;
+        }
+        .radio-toolbar label {
+            display: inline-block;
+            padding: 10px;
+            cursor: pointer;
+        }
+        .question-card {
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <!-- Language Switcher -->
+            <div class="flex justify-end space-x-4 mb-8">
+                <button onclick="changeLang('zh')" id="zhBtn" class="px-4 py-2 rounded bg-blue-600 text-white">中文</button>
+                <button onclick="changeLang('ja')" id="jaBtn" class="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300">日本語</button>
+                <button onclick="changeLang('en')" id="enBtn" class="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300">English</button>
+            </div>
+
+            <form id="surveyForm" class="space-y-6">
+                <!-- Questions will be dynamically inserted here -->
+            </form>
+
+            <div class="mt-8 text-center">
+                <button onclick="submitSurvey()" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition duration-200">
+                    <span class="lang-zh">提交</span>
+                    <span class="lang-ja hidden">送信</span>
+                    <span class="lang-en hidden">Submit</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = {
+            zh: [
+                { id: 1, text: "我觉得系统对我的动作响应很及时。", category: "SoA" },
+                { id: 2, text: "屏幕上的手势动作让我感到与我的真实动作紧密相关。", category: "SoAw" },
+                { id: 3, text: "我能够轻松判断屏幕上手势的具体位置。", category: "SoL" },
+                { id: 4, text: "我觉得整个交互体验很直观。", category: "Neutral" },
+                { id: 5, text: "屏幕上的手势让我感到与自己真实手部动作保持同步。", category: "SoA" },
+                { id: 6, text: "虚拟手势的位置与我的真实手势对齐得很好。", category: "SoL" },
+                { id: 7, text: "屏幕上的手势让我觉得自己确实在操控它们。", category: "SoA" },
+                { id: 8, text: "系统的反馈让我感到自然，不需要花太多精力去适应。", category: "Neutral" },
+                { id: 9, text: "虚拟手势的外观让我觉得像是我的真实手部动作的延伸。", category: "SoAw" },
+                { id: 10, text: "我觉得系统对手势的理解很准确。", category: "Neutral" },
+                { id: 11, text: "虚拟手势的位置让我感到与我的动作匹配得很好。", category: "SoL" },
+                { id: 12, text: "屏幕上的手势看起来像是我的手的一部分。", category: "SoAw" },
+                { id: 13, text: "我觉得整个操作体验流畅，没有太多干扰。", category: "Neutral" },
+                { id: 14, text: "系统的视觉反馈让我觉得我的动作得到了完全的理解。", category: "SoA" },
+                { id: 15, text: "我能准确感知屏幕上手势的移动方向。", category: "SoL" },
+                { id: 16, text: "我注意力更加集中于界面，而不是摄像头画面的反馈。", category: "Neutral" }
+            ],
+            ja: [
+                { id: 1, text: "システムは私の動作にタイムリーに反応していると感じる。", category: "SoA" },
+                { id: 2, text: "画面上のジェスチャーは私の実際の動きとよく連動していると感じる。", category: "SoAw" },
+                { id: 3, text: "画面上のジェスチャーの位置を簡単に判断できる。", category: "SoL" },
+                { id: 4, text: "全体的な操作体験が直感的だと感じる。", category: "Neutral" },
+                { id: 5, text: "画面上のジェスチャーは私の実際の手の動きと同期していると感じる。", category: "SoA" },
+                { id: 6, text: "仮想ジェスチャーの位置は私の実際のジェスチャーとよく一致している。", category: "SoL" },
+                { id: 7, text: "画面上のジェスチャーを確かに自分でコントロールしていると感じる。", category: "SoA" },
+                { id: 8, text: "システムのフィードバックは自然で、適応に多くの努力を必要としない。", category: "Neutral" },
+                { id: 9, text: "仮想ジェスチャーの見た目は私の実際の手の動きの延長のように感じる。", category: "SoAw" },
+                { id: 10, text: "システムは私のジェスチャーを正確に理解していると感じる。", category: "Neutral" },
+                { id: 11, text: "仮想ジェスチャーの位置は私の動きとよく合っていると感じる。", category: "SoL" },
+                { id: 12, text: "画面上のジェスチャーは私の手の一部のように見える。", category: "SoAw" },
+                { id: 13, text: "全体的な操作体験は滑らかで、邪魔な要素が少ない。", category: "Neutral" },
+                { id: 14, text: "システムの視覚的フィードバックは私の動作が完全に理解されていると感じさせる。", category: "SoA" },
+                { id: 15, text: "画面上のジェスチャーの動きの方向を正確に認識できる。", category: "SoL" },
+                { id: 16, text: "カメラ映像のフィードバックよりもインターフェースに注意が集中している。", category: "Neutral" }
+            ],
+            en: [
+                { id: 1, text: "I feel the system responds to my actions in a timely manner.", category: "SoA" },
+                { id: 2, text: "The gestures on screen feel closely connected to my real movements.", category: "SoAw" },
+                { id: 3, text: "I can easily determine the specific position of gestures on screen.", category: "SoL" },
+                { id: 4, text: "I find the whole interaction experience intuitive.", category: "Neutral" },
+                { id: 5, text: "The gestures on screen feel synchronized with my real hand movements.", category: "SoA" },
+                { id: 6, text: "The virtual gesture positions align well with my real gestures.", category: "SoL" },
+                { id: 7, text: "The gestures on screen make me feel like I'm actually controlling them.", category: "SoA" },
+                { id: 8, text: "The system's feedback feels natural and doesn't require much effort to adapt to.", category: "Neutral" },
+                { id: 9, text: "The appearance of virtual gestures feels like an extension of my real hand movements.", category: "SoAw" },
+                { id: 10, text: "I feel the system understands my gestures accurately.", category: "Neutral" },
+                { id: 11, text: "The position of virtual gestures feels well-matched to my movements.", category: "SoL" },
+                { id: 12, text: "The gestures on screen look like they're part of my hand.", category: "SoAw" },
+                { id: 13, text: "The overall operation experience is smooth with minimal interference.", category: "Neutral" },
+                { id: 14, text: "The system's visual feedback makes me feel my actions are fully understood.", category: "SoA" },
+                { id: 15, text: "I can accurately perceive the direction of gesture movement on screen.", category: "SoL" },
+                { id: 16, text: "My attention is more focused on the interface than the camera feed.", category: "Neutral" }
+            ]
+        };
+
+        const scaleLabels = {
+            zh: ['完全不同意', '不同意', '部分不同意', '中立', '部分同意', '同意', '完全同意'],
+            ja: ['全くそう思わない', 'そう思わない', 'あまりそう思わない', '中立', 'ややそう思う', 'そう思う', '非常にそう思う'],
+            en: ['Strongly Disagree', 'Disagree', 'Somewhat Disagree', 'Neutral', 'Somewhat Agree', 'Agree', 'Strongly Agree']
+        };
+
+        let currentLang = 'zh';
+        const responses = {};
+
+        function createQuestionHTML(question, lang) {
+            const scaleHTML = scaleLabels[lang].map((label, index) => `
+                <label class="flex flex-col items-center text-center">
+                    <input type="radio" name="q${question.id}" value="${index + 1}" class="mb-2">
+                    <span class="text-sm">${label}</span>
+                </label>
+            `).join('');
+
+            return `
+                <div class="question-card bg-gray-50 p-4 rounded-lg">
+                    <div class="mb-2">
+                        <span class="font-medium">${question.id}. </span>
+                        <span>${question.text}</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-2 mt-2 radio-toolbar">
+                        ${scaleHTML}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderQuestions(lang) {
+            const form = document.getElementById('surveyForm');
+            form.innerHTML = questions[lang].map(q => createQuestionHTML(q, lang)).join('');
+            
+            // Restore any previous responses
+            Object.entries(responses).forEach(([questionId, value]) => {
+                const radio = document.querySelector(`input[name="q${questionId}"][value="${value}"]`);
+                if (radio) radio.checked = true;
+            });
+        }
+
+        function changeLang(lang) {
+            // Save current responses
+            document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+                const questionId = radio.name.substring(1);
+                responses[questionId] = radio.value;
+            });
+
+            // Update language
+            currentLang = lang;
+            renderQuestions(lang);
+
+            // Update button styles
+            ['zh', 'ja', 'en'].forEach(l => {
+                const btn = document.getElementById(`${l}Btn`);
+                if (l === lang) {
+                    btn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    btn.classList.add('bg-blue-600', 'text-white');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                }
+            });
+
+            // Show/hide language-specific elements
+            document.querySelectorAll('[class*="lang-"]').forEach(el => {
+                el.classList.add('hidden');
+            });
+            document.querySelectorAll(`.lang-${lang}`).forEach(el => {
+                el.classList.remove('hidden');
+            });
+        }
+
+        function submitSurvey() {
+            // Save current responses
+            document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+                const questionId = radio.name.substring(1);
+                responses[questionId] = radio.value;
+            });
+
+            // Validate responses
+            const missingQuestions = questions[currentLang]
+                .filter(q => !responses[q.id])
+                .map(q => q.id);
+
+            if (missingQuestions.length > 0) {
+                const messages = {
+                    zh: `请回答以下问题：${missingQuestions.join(', ')}`,
+                    ja: `次の質問に回答してください：${missingQuestions.join(', ')}`,
+                    en: `Please answer questions: ${missingQuestions.join(', ')}`
+                };
+                alert(messages[currentLang]);
+                return;
+            }
+
+            // Process responses
+            console.log('Survey responses:', responses);
+            // Here you can add code to send the responses to a server
+            const messages = {
+                zh: '问卷已提交，谢谢！',
+                ja: 'アンケートが送信されました。ありがとうございます！',
+                en: 'Survey submitted. Thank you!'
+            };
+            alert(messages[currentLang]);
+        }
+
+        // Initial render
+        renderQuestions(currentLang);
+    </script>
+</body>
+</html>
